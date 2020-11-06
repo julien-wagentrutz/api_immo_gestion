@@ -4,16 +4,17 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @ORM\HasLifecycleCallbacks()
  */
 class User
 {
     /**
      * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="string", length=36, unique=true)
      */
     private $id;
 
@@ -25,7 +26,7 @@ class User
     /**
      * @ORM\Column(type="string", length=150)
      */
-    private $last_name;
+    private $lastName;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -37,10 +38,11 @@ class User
      */
     private $password;
 
+
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=true)
      */
-    private $created_at;
+    private $createdAt;
 
     public function getId(): ?int
     {
@@ -61,12 +63,12 @@ class User
 
     public function getLastName(): ?string
     {
-        return $this->last_name;
+        return $this->lastName;
     }
 
-    public function setLastName(string $last_name): self
+    public function setLastName(string $lastName): self
     {
-        $this->last_name = $last_name;
+        $this->lastName = $lastName;
 
         return $this;
     }
@@ -97,13 +99,38 @@ class User
 
     public function getCreatedAt(): ?\DateTimeInterface
     {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $created_at): self
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
-        $this->created_at = $created_at;
+        $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    /**
+ * @ORM\PrePersist
+ */
+    public function setCreatedAtValue()
+    {
+        $this->createdAt = new \DateTime();
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setIdValue()
+    {
+        $uuid = Uuid::v4();;
+        $this->id = $uuid->jsonSerialize();
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function hashPassword()
+    {
+
     }
 }
