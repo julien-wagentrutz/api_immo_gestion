@@ -4,9 +4,12 @@ namespace App\Entity;
 
 use App\Repository\LodgingTypeRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
+
 
 /**
  * @ORM\Entity(repositoryClass=LodgingTypeRepository::class)
+ * @ORM\HasLifecycleCallbacks()
  */
 class LodgingType
 {
@@ -37,5 +40,14 @@ class LodgingType
         $this->name = $name;
 
         return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setIdValue()
+    {
+        $uuid = Uuid::v4();;
+        $this->id = $uuid->jsonSerialize();
     }
 }
