@@ -8,4 +8,5 @@
 /public/bundles/
 /var/
 /vendor/
+/src/Controller/ApiController.php
 ###< symfony/framework-bundle ###
