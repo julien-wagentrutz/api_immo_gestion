@@ -27,19 +27,19 @@ class LodgingCategory
     private $name;
 
     /**
-     * @ORM\OneToMany(targetEntity=LodgingType::class, mappedBy="lodgingCategory")
-     */
-    private $types;
-
-    /**
      * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="lodgingCategory")
      */
     private $lodgingCollection;
 
+    /**
+     * @ORM\ManyToMany(targetEntity=LodgingType::class, mappedBy="lodgingCategoryCollection")
+     */
+    private $lodgingTypes;
+
     public function __construct()
     {
-        $this->types = new ArrayCollection();
         $this->lodgingCollection = new ArrayCollection();
+        $this->lodgingTypes = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -68,35 +68,6 @@ class LodgingCategory
         $this->id = $uuid->jsonSerialize();
     }
 
-    /**
-     * @return Collection|LodgingType[]
-     */
-    public function getTypes(): Collection
-    {
-        return $this->types;
-    }
-
-    public function addType(LodgingType $type): self
-    {
-        if (!$this->types->contains($type)) {
-            $this->types[] = $type;
-            $type->setLodgingCategory($this);
-        }
-
-        return $this;
-    }
-
-    public function removeType(LodgingType $type): self
-    {
-        if ($this->types->removeElement($type)) {
-            // set the owning side to null (unless already changed)
-            if ($type->getLodgingCategory() === $this) {
-                $type->setLodgingCategory(null);
-            }
-        }
-
-        return $this;
-    }
 
     /**
      * @return Collection|Lodging[]
@@ -123,6 +94,33 @@ class LodgingCategory
             if ($lodgingCollection->getLodgingCategory() === $this) {
                 $lodgingCollection->setLodgingCategory(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|LodgingType[]
+     */
+    public function getLodgingTypes(): Collection
+    {
+        return $this->lodgingTypes;
+    }
+
+    public function addLodgingType(LodgingType $lodgingType): self
+    {
+        if (!$this->lodgingTypes->contains($lodgingType)) {
+            $this->lodgingTypes[] = $lodgingType;
+            $lodgingType->addLodgingCategoryCollection($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLodgingType(LodgingType $lodgingType): self
+    {
+        if ($this->lodgingTypes->removeElement($lodgingType)) {
+            $lodgingType->removeLodgingCategoryCollection($this);
         }
 
         return $this;

@@ -93,6 +93,12 @@ class Lodging
      */
     private $lodgingCategory;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="lodgingModify")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $nameLastModifier;
+
     public function __construct()
     {
         $this->tenants = new ArrayCollection();
@@ -307,6 +313,18 @@ class Lodging
     public function setLodgingCategory(?LodgingCategory $lodgingCategory): self
     {
         $this->lodgingCategory = $lodgingCategory;
+
+        return $this;
+    }
+
+    public function getNameLastModifier(): ?User
+    {
+        return $this->nameLastModifier;
+    }
+
+    public function setNameLastModifier(?User $nameLastModifier): self
+    {
+        $this->nameLastModifier = $nameLastModifier;
 
         return $this;
     }

@@ -27,19 +27,19 @@ class LodgingType
     private $name;
 
     /**
-     * @ORM\ManyToOne(targetEntity=LodgingCategory::class, inversedBy="types")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $lodgingCategory;
-
-    /**
      * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="lodgingType")
      */
     private $lodgingCollection;
 
+    /**
+     * @ORM\ManyToMany(targetEntity=LodgingCategory::class, inversedBy="lodgingTypes")
+     */
+    private $lodgingCategoryCollection;
+
     public function __construct()
     {
         $this->lodgingCollection = new ArrayCollection();
+        $this->lodgingCategoryCollection = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -68,18 +68,6 @@ class LodgingType
         $this->id = $uuid->jsonSerialize();
     }
 
-    public function getLodgingCategory(): ?LodgingCategory
-    {
-        return $this->lodgingCategory;
-    }
-
-    public function setLodgingCategory(?LodgingCategory $lodgingCategory): self
-    {
-        $this->lodgingCategory = $lodgingCategory;
-
-        return $this;
-    }
-
     /**
      * @return Collection|Lodging[]
      */
@@ -106,6 +94,30 @@ class LodgingType
                 $lodgingCollection->setLodgingType(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|LodgingCategory[]
+     */
+    public function getLodgingCategoryCollection(): Collection
+    {
+        return $this->lodgingCategoryCollection;
+    }
+
+    public function addLodgingCategoryCollection(LodgingCategory $lodgingCategoryCollection): self
+    {
+        if (!$this->lodgingCategoryCollection->contains($lodgingCategoryCollection)) {
+            $this->lodgingCategoryCollection[] = $lodgingCategoryCollection;
+        }
+
+        return $this;
+    }
+
+    public function removeLodgingCategoryCollection(LodgingCategory $lodgingCategoryCollection): self
+    {
+        $this->lodgingCategoryCollection->removeElement($lodgingCategoryCollection);
 
         return $this;
     }

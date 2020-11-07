@@ -56,6 +56,14 @@ class Tenant
      */
     private $lodgingCollection;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="tenantsModify")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $nameLastModifier;
+
+
+
     public function __construct()
     {
         $this->accounts = new ArrayCollection();
@@ -128,14 +136,7 @@ class Tenant
         return $this;
     }
 
-    /**
-     * @ORM\PrePersist
-     */
-    public function setIdValue()
-    {
-        $uuid = Uuid::v4();;
-        $this->id = $uuid->jsonSerialize();
-    }
+
 
     /**
      * @return Collection|Account[]
@@ -187,4 +188,26 @@ class Tenant
 
         return $this;
     }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setIdValue()
+    {
+        $uuid = Uuid::v4();;
+        $this->id = $uuid->jsonSerialize();
+    }
+
+    public function getNameLastModifier(): ?User
+    {
+        return $this->nameLastModifier;
+    }
+
+    public function setNameLastModifier(?User $user): self
+    {
+        $this->nameLastModifier = $user;
+
+        return $this;
+    }
+
 }

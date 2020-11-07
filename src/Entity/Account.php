@@ -40,12 +40,18 @@ class Account
      */
     private $users;
 
+    /**
+     * @ORM\OneToMany(targetEntity=User::class, mappedBy="lastAccountSelected")
+     */
+    private $usersLastAccount;
+
 
     public function __construct()
     {
         $this->lodgingCollection = new ArrayCollection();
         $this->tenants = new ArrayCollection();
         $this->users = new ArrayCollection();
+        $this->usersLastAccount = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -150,6 +156,36 @@ class Account
     {
         if ($this->users->removeElement($user)) {
             $user->removeAccount($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|User[]
+     */
+    public function getUsersLastAccount(): Collection
+    {
+        return $this->usersLastAccount;
+    }
+
+    public function addUsersLastAccount(User $usersLastAccount): self
+    {
+        if (!$this->usersLastAccount->contains($usersLastAccount)) {
+            $this->usersLastAccount[] = $usersLastAccount;
+            $usersLastAccount->setLastAccountSelected($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUsersLastAccount(User $usersLastAccount): self
+    {
+        if ($this->usersLastAccount->removeElement($usersLastAccount)) {
+            // set the owning side to null (unless already changed)
+            if ($usersLastAccount->getLastAccountSelected() === $this) {
+                $usersLastAccount->setLastAccountSelected(null);
+            }
         }
 
         return $this;

@@ -57,9 +57,28 @@ class User implements UserInterface
      */
     private $accounts;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Tenant::class, mappedBy="nameLastModifier")
+     */
+    private $tenantsModify;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="nameLastModifier")
+     */
+    private $lodgingModify;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Account::class, inversedBy="usersLastAccount")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $lastAccountSelected;
+
+
     public function __construct()
     {
         $this->accounts = new ArrayCollection();
+        $this->tenantsModify = new ArrayCollection();
+        $this->lodgingModify = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -213,6 +232,78 @@ class User implements UserInterface
     public function removeAccount(Account $account): self
     {
         $this->accounts->removeElement($account);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Tenant[]
+     */
+    public function getTenantsModify(): Collection
+    {
+        return $this->tenantsModify;
+    }
+
+    public function addTenantsModify(Tenant $tenantsModify): self
+    {
+        if (!$this->tenantsModify->contains($tenantsModify)) {
+            $this->tenantsModify[] = $tenantsModify;
+            $tenantsModify->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTenantsModify(Tenant $tenantsModify): self
+    {
+        if ($this->tenantsModify->removeElement($tenantsModify)) {
+            // set the owning side to null (unless already changed)
+            if ($tenantsModify->getUser() === $this) {
+                $tenantsModify->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Lodging[]
+     */
+    public function getLodgingModify(): Collection
+    {
+        return $this->lodgingModify;
+    }
+
+    public function addLodgingModify(Lodging $lodgingModify): self
+    {
+        if (!$this->lodgingModify->contains($lodgingModify)) {
+            $this->lodgingModify[] = $lodgingModify;
+            $lodgingModify->setNameLastModifier($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLodgingModify(Lodging $lodgingModify): self
+    {
+        if ($this->lodgingModify->removeElement($lodgingModify)) {
+            // set the owning side to null (unless already changed)
+            if ($lodgingModify->getNameLastModifier() === $this) {
+                $lodgingModify->setNameLastModifier(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getLastAccountSelected(): ?Account
+    {
+        return $this->lastAccountSelected;
+    }
+
+    public function setLastAccountSelected(?Account $lastAccountSelected): self
+    {
+        $this->lastAccountSelected = $lastAccountSelected;
 
         return $this;
     }
