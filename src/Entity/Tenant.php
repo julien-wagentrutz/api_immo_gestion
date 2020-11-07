@@ -44,7 +44,7 @@ class Tenant
      */
     private $email;
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
         return $this->id;
     }
