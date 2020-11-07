@@ -31,9 +31,15 @@ class LodgingCategory
      */
     private $types;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="lodgingCategory")
+     */
+    private $lodgingCollection;
+
     public function __construct()
     {
         $this->types = new ArrayCollection();
+        $this->lodgingCollection = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -86,6 +92,36 @@ class LodgingCategory
             // set the owning side to null (unless already changed)
             if ($type->getLodgingCategory() === $this) {
                 $type->setLodgingCategory(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Lodging[]
+     */
+    public function getLodgingCollection(): Collection
+    {
+        return $this->lodgingCollection;
+    }
+
+    public function addLodgingCollection(Lodging $lodgingCollection): self
+    {
+        if (!$this->lodgingCollection->contains($lodgingCollection)) {
+            $this->lodgingCollection[] = $lodgingCollection;
+            $lodgingCollection->setLodgingCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLodgingCollection(Lodging $lodgingCollection): self
+    {
+        if ($this->lodgingCollection->removeElement($lodgingCollection)) {
+            // set the owning side to null (unless already changed)
+            if ($lodgingCollection->getLodgingCategory() === $this) {
+                $lodgingCollection->setLodgingCategory(null);
             }
         }
 

@@ -87,6 +87,12 @@ class Lodging
      */
     private $tenants;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=LodgingCategory::class, inversedBy="lodgingCollection")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $lodgingCategory;
+
     public function __construct()
     {
         $this->tenants = new ArrayCollection();
@@ -289,6 +295,18 @@ class Lodging
         if ($this->tenants->removeElement($tenant)) {
             $tenant->removeLodgingCollection($this);
         }
+
+        return $this;
+    }
+
+    public function getLodgingCategory(): ?LodgingCategory
+    {
+        return $this->lodgingCategory;
+    }
+
+    public function setLodgingCategory(?LodgingCategory $lodgingCategory): self
+    {
+        $this->lodgingCategory = $lodgingCategory;
 
         return $this;
     }
