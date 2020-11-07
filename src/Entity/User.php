@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Uuid;
@@ -49,6 +51,16 @@ class User implements UserInterface
      * @ORM\Column(type="datetime")
      */
     private $createdAt;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Account::class, inversedBy="users")
+     */
+    private $accounts;
+
+    public function __construct()
+    {
+        $this->accounts = new ArrayCollection();
+    }
 
     public function getId(): ?string
     {
@@ -179,5 +191,29 @@ class User implements UserInterface
     {
         $uuid = Uuid::v4();;
         $this->id = $uuid->jsonSerialize();
+    }
+
+    /**
+     * @return Collection|Account[]
+     */
+    public function getAccounts(): Collection
+    {
+        return $this->accounts;
+    }
+
+    public function addAccount(Account $account): self
+    {
+        if (!$this->accounts->contains($account)) {
+            $this->accounts[] = $account;
+        }
+
+        return $this;
+    }
+
+    public function removeAccount(Account $account): self
+    {
+        $this->accounts->removeElement($account);
+
+        return $this;
     }
 }

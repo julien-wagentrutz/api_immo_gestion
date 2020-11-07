@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\AccountRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -22,6 +24,29 @@ class Account
      * @ORM\Column(type="string", length=50)
      */
     private $state;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="account", orphanRemoval=true)
+     */
+    private $lodgingCollection;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Tenant::class, inversedBy="accounts")
+     */
+    private $tenants;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=User::class, mappedBy="accounts")
+     */
+    private $users;
+
+
+    public function __construct()
+    {
+        $this->lodgingCollection = new ArrayCollection();
+        $this->tenants = new ArrayCollection();
+        $this->users = new ArrayCollection();
+    }
 
     public function getId(): ?string
     {
@@ -48,4 +73,86 @@ class Account
         $uuid = Uuid::v4();;
         $this->id = $uuid->jsonSerialize();
     }
+
+    /**
+     * @return Collection|Lodging[]
+     */
+    public function getLodgingCollection(): Collection
+    {
+        return $this->lodgingCollection;
+    }
+
+    public function addLodgingCollection(Lodging $lodgingCollection): self
+    {
+        if (!$this->lodgingCollection->contains($lodgingCollection)) {
+            $this->lodgingCollection[] = $lodgingCollection;
+            $lodgingCollection->setAccount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLodgingCollection(Lodging $lodgingCollection): self
+    {
+        if ($this->lodgingCollection->removeElement($lodgingCollection)) {
+            // set the owning side to null (unless already changed)
+            if ($lodgingCollection->getAccount() === $this) {
+                $lodgingCollection->setAccount(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Tenant[]
+     */
+    public function getTenants(): Collection
+    {
+        return $this->tenants;
+    }
+
+    public function addTenant(Tenant $tenant): self
+    {
+        if (!$this->tenants->contains($tenant)) {
+            $this->tenants[] = $tenant;
+        }
+
+        return $this;
+    }
+
+    public function removeTenant(Tenant $tenant): self
+    {
+        $this->tenants->removeElement($tenant);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|User[]
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(User $user): self
+    {
+        if (!$this->users->contains($user)) {
+            $this->users[] = $user;
+            $user->addAccount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): self
+    {
+        if ($this->users->removeElement($user)) {
+            $user->removeAccount($this);
+        }
+
+        return $this;
+    }
+
 }

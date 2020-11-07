@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\TenantRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -43,6 +45,23 @@ class Tenant
      * @ORM\Column(type="string", length=255)
      */
     private $email;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Account::class, mappedBy="tenants")
+     */
+    private $accounts;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Lodging::class, inversedBy="tenants")
+     */
+    private $lodgingCollection;
+
+    public function __construct()
+    {
+        $this->accounts = new ArrayCollection();
+        $this->lodgingCollection = new ArrayCollection();
+    }
+
 
     public function getId(): ?string
     {
@@ -116,5 +135,56 @@ class Tenant
     {
         $uuid = Uuid::v4();;
         $this->id = $uuid->jsonSerialize();
+    }
+
+    /**
+     * @return Collection|Account[]
+     */
+    public function getAccounts(): Collection
+    {
+        return $this->accounts;
+    }
+
+    public function addAccount(Account $account): self
+    {
+        if (!$this->accounts->contains($account)) {
+            $this->accounts[] = $account;
+            $account->addTenant($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAccount(Account $account): self
+    {
+        if ($this->accounts->removeElement($account)) {
+            $account->removeTenant($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Lodging[]
+     */
+    public function getLodgingCollection(): Collection
+    {
+        return $this->lodgingCollection;
+    }
+
+    public function addLodgingCollection(Lodging $lodgingCollection): self
+    {
+        if (!$this->lodgingCollection->contains($lodgingCollection)) {
+            $this->lodgingCollection[] = $lodgingCollection;
+        }
+
+        return $this;
+    }
+
+    public function removeLodgingCollection(Lodging $lodgingCollection): self
+    {
+        $this->lodgingCollection->removeElement($lodgingCollection);
+
+        return $this;
     }
 }

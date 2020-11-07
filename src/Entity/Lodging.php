@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\LodgingRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection as CollectionDoctrine;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -63,6 +65,32 @@ class Lodging
      * @ORM\Column(type="datetime")
      */
     private $lastUpdateAt;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=LodgingType::class, inversedBy="lodgingCollection")
+     */
+    private $lodgingType;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Collection::class, inversedBy="lodgingItems")
+     */
+    private $collection;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Account::class, inversedBy="lodgingCollection")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $account;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Tenant::class, mappedBy="lodgingCollection")
+     */
+    private $tenants;
+
+    public function __construct()
+    {
+        $this->tenants = new ArrayCollection();
+    }
 
     public function getId(): ?string
     {
@@ -200,6 +228,69 @@ class Lodging
     {
         $uuid = Uuid::v4();;
         $this->id = $uuid->jsonSerialize();
+    }
+
+    public function getLodgingType(): ?LodgingType
+    {
+        return $this->lodgingType;
+    }
+
+    public function setLodgingType(?LodgingType $lodgingType): self
+    {
+        $this->lodgingType = $lodgingType;
+
+        return $this;
+    }
+
+    public function getCollection(): ?Collection
+    {
+        return $this->collection;
+    }
+
+    public function setCollection(?Collection $collection): self
+    {
+        $this->collection = $collection;
+
+        return $this;
+    }
+
+    public function getAccount(): ?Account
+    {
+        return $this->account;
+    }
+
+    public function setAccount(?Account $account): self
+    {
+        $this->account = $account;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Tenant[]
+     */
+    public function getTenants(): CollectionDoctrine
+    {
+        return $this->tenants;
+    }
+
+    public function addTenant(Tenant $tenant): self
+    {
+        if (!$this->tenants->contains($tenant)) {
+            $this->tenants[] = $tenant;
+            $tenant->addLodgingCollection($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTenant(Tenant $tenant): self
+    {
+        if ($this->tenants->removeElement($tenant)) {
+            $tenant->removeLodgingCollection($this);
+        }
+
+        return $this;
     }
 
 }
