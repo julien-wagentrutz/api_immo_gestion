@@ -18,7 +18,7 @@ class Collection
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"read_lodging","read_collection","read_tenant"})
+     * @Groups({"read_lodging","read_collection","read_tenant","read_account"})
      */
     private $id;
 

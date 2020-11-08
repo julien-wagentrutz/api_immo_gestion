@@ -72,6 +72,16 @@ class Tenant
      */
     private $nameLastModifier;
 
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $createdAt;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $lastUpdateAt;
+
 
 
     public function __construct()
@@ -199,14 +209,6 @@ class Tenant
         return $this;
     }
 
-    /**
-     * @ORM\PrePersist
-     */
-    public function setIdValue()
-    {
-        $uuid = Uuid::v4();;
-        $this->id = $uuid->jsonSerialize();
-    }
 
     public function getNameLastModifier(): ?User
     {
@@ -216,6 +218,69 @@ class Tenant
     public function setNameLastModifier(?User $user): self
     {
         $this->nameLastModifier = $user;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getLastUpdateAt(): ?\DateTimeInterface
+    {
+        return $this->lastUpdateAt;
+    }
+
+    public function setLastUpdateAt(\DateTimeInterface $lastUpdateAt): self
+    {
+        $this->lastUpdateAt = $lastUpdateAt;
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setIdValue()
+    {
+        $uuid = Uuid::v4();;
+        $this->id = $uuid->jsonSerialize();
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setLastUpdate(): self
+    {
+        $this->lastUpdateAt = new \DateTime();
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setUpLastUpdate(): self
+    {
+        $this->lastUpdateAt = new \DateTime();
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setCreateAt(): self
+    {
+        $this->createdAt = new \DateTime();
 
         return $this;
     }

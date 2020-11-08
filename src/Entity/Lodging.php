@@ -235,7 +235,7 @@ class Lodging
      */
     public function setLastUpdate(): self
     {
-        $this->createAt = new \DateTime();
+        $this->lastUpdateAt = new \DateTime();
 
         return $this;
     }

@@ -53,12 +53,8 @@ class Account
     private $usersLastAccount;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Collection::class, inversedBy="account")
-     */
-    private $collection;
-
-    /**
      * @ORM\OneToMany(targetEntity=Collection::class, mappedBy="account", orphanRemoval=true)
+     * @Groups({"read_account"})
      */
     private $collections;
 
@@ -205,18 +201,6 @@ class Account
                 $usersLastAccount->setLastAccountSelected(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getCollection(): ?CollectionDoctrine
-    {
-        return $this->collection;
-    }
-
-    public function setCollection(?CollectionDoctrine $collection): self
-    {
-        $this->collection = $collection;
 
         return $this;
     }
