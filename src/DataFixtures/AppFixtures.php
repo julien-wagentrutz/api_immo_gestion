@@ -29,6 +29,8 @@ public function load(ObjectManager $manager)
         $account->setState('perso');
         $manager->persist($account);
 
+
+
         $user = new User();
         $user->setEmail('julien.wgtz@outlook.com');
         $user->setPassword('Julien68');
@@ -40,6 +42,22 @@ public function load(ObjectManager $manager)
         );
         $user->setLastAccountSelected($account);
         $manager->persist($user);
+
+        $user = new User();
+        $user->setEmail('paul.mercy@outlook.com');
+        $user->setPassword('Julien68');
+        $user->setName('Paul');
+        $user->setLastName('Mercy');
+        $user->addAccount($account);
+        $user->setPassword(
+            $this->passwordEncoder->encodePassword( $user, $user->getPassword() )
+        );
+        $user->setLastAccountSelected($account);
+        $manager->persist($user);
+
+        $account = new Account();
+        $account->setState('entreprise');
+        $manager->persist($account);
 
         /**
          *  APPARTEMENT

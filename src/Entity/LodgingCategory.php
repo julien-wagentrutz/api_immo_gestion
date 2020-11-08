@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 
 /**
@@ -18,11 +20,13 @@ class LodgingCategory
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $name;
 

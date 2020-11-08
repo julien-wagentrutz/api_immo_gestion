@@ -15,8 +15,13 @@ class LodgingFixtures extends Fixture
 {
     public function load(ObjectManager $manager)
     {
+        $account = $manager
+            ->getRepository(Account::class)
+            ->findOneBy(['state' => 'perso']);
+
         $collection = new Collection();
         $collection->setName("Immeuble Saint Jean");
+        $collection->setAccount($account);
         $manager->persist($collection);
 
         $lodging = new Lodging();
@@ -24,9 +29,7 @@ class LodgingFixtures extends Fixture
         $lodging->setState('Libre');
         $lodging->setCollection($collection);
 
-        $account = $manager
-            ->getRepository(Account::class)
-            ->findOneBy(['state' => 'perso']);
+
 
         $lodging->setAccount($account);
 
@@ -42,6 +45,17 @@ class LodgingFixtures extends Fixture
         $lodging->setNameLastModifier($user);
 
         $manager->persist($lodging);
+
+
+        $lodging = new Lodging();
+        $lodging->setName('Appart 304');
+        $lodging->setState('Libre');
+        $lodging->setCollection($collection);
+        $lodging->setAccount($account);
+        $lodging->setLodgingCategory($category);
+        $lodging->setNameLastModifier($user);
+        $manager->persist($lodging);
+
 
         $manager->flush();
     }

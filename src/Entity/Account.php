@@ -4,9 +4,11 @@ namespace App\Entity;
 
 use App\Repository\AccountRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Collection as CollectionDoctrine;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 /**
  * @ORM\Entity(repositoryClass=AccountRepository::class)
@@ -17,11 +19,13 @@ class Account
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
+     * @Groups({"read_user", "read_account","read_tenant"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=50)
+     * @Groups({"read_account"})
      */
     private $state;
 
@@ -37,13 +41,26 @@ class Account
 
     /**
      * @ORM\ManyToMany(targetEntity=User::class, mappedBy="accounts")
+     * @Groups({"read_account"})
      */
     private $users;
 
     /**
+     *
      * @ORM\OneToMany(targetEntity=User::class, mappedBy="lastAccountSelected")
+     * @Groups({"read_account"})
      */
     private $usersLastAccount;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Collection::class, inversedBy="account")
+     */
+    private $collection;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Collection::class, mappedBy="account", orphanRemoval=true)
+     */
+    private $collections;
 
 
     public function __construct()
@@ -52,6 +69,7 @@ class Account
         $this->tenants = new ArrayCollection();
         $this->users = new ArrayCollection();
         $this->usersLastAccount = new ArrayCollection();
+        $this->collections = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -83,7 +101,7 @@ class Account
     /**
      * @return Collection|Lodging[]
      */
-    public function getLodgingCollection(): Collection
+    public function getLodgingCollection(): CollectionDoctrine
     {
         return $this->lodgingCollection;
     }
@@ -113,7 +131,7 @@ class Account
     /**
      * @return Collection|Tenant[]
      */
-    public function getTenants(): Collection
+    public function getTenants(): CollectionDoctrine
     {
         return $this->tenants;
     }
@@ -137,7 +155,7 @@ class Account
     /**
      * @return Collection|User[]
      */
-    public function getUsers(): Collection
+    public function getUsers(): CollectionDoctrine
     {
         return $this->users;
     }
@@ -164,7 +182,7 @@ class Account
     /**
      * @return Collection|User[]
      */
-    public function getUsersLastAccount(): Collection
+    public function getUsersLastAccount(): CollectionDoctrine
     {
         return $this->usersLastAccount;
     }
@@ -185,6 +203,48 @@ class Account
             // set the owning side to null (unless already changed)
             if ($usersLastAccount->getLastAccountSelected() === $this) {
                 $usersLastAccount->setLastAccountSelected(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getCollection(): ?CollectionDoctrine
+    {
+        return $this->collection;
+    }
+
+    public function setCollection(?CollectionDoctrine $collection): self
+    {
+        $this->collection = $collection;
+
+        return $this;
+    }
+
+    /**
+     * @return CollectionDoctrine|Collection[]
+     */
+    public function getCollections(): CollectionDoctrine
+    {
+        return $this->collections;
+    }
+
+    public function addCollection(Collection $collection): self
+    {
+        if (!$this->collections->contains($collection)) {
+            $this->collections[] = $collection;
+            $collection->setAccount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCollection(Collection $collection): self
+    {
+        if ($this->collections->removeElement($collection)) {
+            // set the owning side to null (unless already changed)
+            if ($collection->getAccount() === $this) {
+                $collection->setAccount(null);
             }
         }
 

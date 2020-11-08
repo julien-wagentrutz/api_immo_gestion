@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 
 /**
@@ -18,47 +19,56 @@ class Tenant
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
+     * @Groups({"read_user", "read_lodging", "read_collection","read_tenant"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read_tenant"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read_tenant"})
      */
     private $lastName;
 
     /**
      * @ORM\Column(type="date")
+     * @Groups({"read_tenant"})
      */
     private $birthDate;
 
     /**
      * @ORM\Column(type="string", length=12)
+     * @Groups({"read_tenant"})
      */
     private $phoneNumber;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read_tenant"})
      */
     private $email;
 
     /**
      * @ORM\ManyToMany(targetEntity=Account::class, mappedBy="tenants")
+     * @Groups({"read_tenant"})
      */
     private $accounts;
 
     /**
      * @ORM\ManyToMany(targetEntity=Lodging::class, inversedBy="tenants")
+     * @Groups({"read_tenant"})
      */
     private $lodgingCollection;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="tenantsModify")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"read_tenant"})
      */
     private $nameLastModifier;
 

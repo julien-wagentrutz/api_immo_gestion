@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection as CollectionDoctrine;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 
 /**
@@ -18,61 +20,73 @@ class Lodging
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=50)
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $state;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $price;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $city;
 
     /**
      * @ORM\Column(type="string", length=10, nullable=true)
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $zipCode;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $address;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $complementAddress;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"read_lodging","read_collection"})
      */
     private $createAt;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"read_lodging"})
      */
     private $lastUpdateAt;
 
     /**
      * @ORM\ManyToOne(targetEntity=LodgingType::class, inversedBy="lodgingCollection")
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $lodgingType;
 
     /**
      * @ORM\ManyToOne(targetEntity=Collection::class, inversedBy="lodgingItems")
+     * @Groups({"read_lodging","read_tenant"})
      */
     private $collection;
 
@@ -84,18 +98,21 @@ class Lodging
 
     /**
      * @ORM\ManyToMany(targetEntity=Tenant::class, mappedBy="lodgingCollection")
+     * @Groups({"read_lodging","read_collection"})
      */
     private $tenants;
 
     /**
      * @ORM\ManyToOne(targetEntity=LodgingCategory::class, inversedBy="lodgingCollection")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $lodgingCategory;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="lodgingModify")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"read_lodging"})
      */
     private $nameLastModifier;
 

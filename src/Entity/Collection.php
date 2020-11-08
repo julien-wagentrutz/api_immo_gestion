@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection as CollectionDoctrine;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=CollectionRepository::class)
@@ -17,18 +18,28 @@ class Collection
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
     private $name;
 
     /**
      * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="collection")
+     * @Groups({"read_collection"})
      */
     private $lodgingItems;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Account::class, inversedBy="collections")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $account;
+
 
     public function __construct()
     {
@@ -90,4 +101,18 @@ class Collection
 
         return $this;
     }
+
+    public function getAccount(): ?Account
+    {
+        return $this->account;
+    }
+
+    public function setAccount(?Account $account): self
+    {
+        $this->account = $account;
+
+        return $this;
+    }
+
+
 }

@@ -22,19 +22,18 @@ class TenantRepository extends ServiceEntityRepository
     // /**
     //  * @return Tenant[] Returns an array of Tenant objects
     //  */
-    /*
-    public function findByExampleField($value)
+
+    public function findTenantsByAccountId($id)
     {
         return $this->createQueryBuilder('t')
-            ->andWhere('t.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('t.id', 'ASC')
-            ->setMaxResults(10)
+            ->leftJoin('t.accounts','a')
+            ->andWhere('a.id = :id')
+            ->setParameter('id', $id)
             ->getQuery()
             ->getResult()
         ;
     }
-    */
+
 
     /*
     public function findOneBySomeField($value): ?Tenant

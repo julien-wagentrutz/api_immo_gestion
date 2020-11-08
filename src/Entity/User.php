@@ -8,6 +8,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
@@ -18,42 +20,50 @@ class User implements UserInterface
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
+     * @Groups({"read_user", "read_lodging","read_account","read_tenant"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Groups({"read_user"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="json")
+     * @Groups({"read_user"})
      */
     private $roles = [];
 
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
+     * @Groups({"read_user"})
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=100)
+     * @Groups({"read_user","read_lodging","read_account"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=100)
+     * @Groups({"read_user","read_lodging","read_account"})
      */
     private $lastName;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"read_user"})
      */
     private $createdAt;
 
     /**
      * @ORM\ManyToMany(targetEntity=Account::class, inversedBy="users")
+     * @Groups({"read_user"})
      */
     private $accounts;
 
@@ -69,7 +79,8 @@ class User implements UserInterface
 
     /**
      * @ORM\ManyToOne(targetEntity=Account::class, inversedBy="usersLastAccount")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn()
+     * @Groups({"read_user"})
      */
     private $lastAccountSelected;
 

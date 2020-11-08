@@ -37,8 +37,34 @@ class TenantFixtures extends Fixture
             ->findOneBy(['name' => 'Appart 304']);
 
         $tenant->addLodgingCollection($lodging);
-
         $manager->persist($tenant);
+
+
+        $tenant = new Tenant();
+        $tenant->setName("Richard");
+        $tenant->setLastName('Common');
+        $tenant->setBirthDate(new \DateTime('22-01-2005'));
+        $tenant->setEmail('richard.common@gmail.fr');
+        $tenant->setPhoneNumber('0603459428');
+        $tenant->addAccount($account);
+        $tenant->setNameLastModifier($user);
+        $tenant->addLodgingCollection($lodging);
+        $manager->persist($tenant);
+
+        $account = $manager
+            ->getRepository(Account::class)
+            ->findOneBy(['state' => 'entreprise']);
+        $tenant = new Tenant();
+        $tenant->setName("Kevin");
+        $tenant->setLastName('Hartman');
+        $tenant->setBirthDate(new \DateTime('15-05-1962'));
+        $tenant->setEmail('KeKe_hartman_@gmail.fr');
+        $tenant->setPhoneNumber('0324956274');
+        $tenant->addAccount($account);
+        $tenant->setNameLastModifier($user);
+        $tenant->addLodgingCollection($lodging);
+        $manager->persist($tenant);
+
         $manager->flush();
     }
 
