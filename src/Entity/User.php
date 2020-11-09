@@ -61,6 +61,11 @@ class User implements UserInterface
      */
     private $createdAt;
 
+     /**
+      * @ORM\Column(type="string", unique=true)
+      */
+     private $apiToken;
+
     /**
      * @ORM\ManyToMany(targetEntity=Account::class, inversedBy="users")
      * @Groups({"read_user"})
@@ -224,6 +229,15 @@ class User implements UserInterface
     }
 
     /**
+     * @ORM\PrePersist
+     */
+    public function setTokenValue()
+    {
+        $uuid = Uuid::v4();;
+        $this->apiToken = $uuid->jsonSerialize();
+    }
+
+    /**
      * @return Collection|Account[]
      */
     public function getAccounts(): Collection
@@ -315,6 +329,18 @@ class User implements UserInterface
     public function setLastAccountSelected(?Account $lastAccountSelected): self
     {
         $this->lastAccountSelected = $lastAccountSelected;
+
+        return $this;
+    }
+
+    public function getApiToken(): ?string
+    {
+        return $this->apiToken;
+    }
+
+    public function setApiToken(?string $apiToken): self
+    {
+        $this->apiToken = $apiToken;
 
         return $this;
     }
