@@ -20,85 +20,42 @@ class LodgingCategory
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"read_lodging","read_collection","read_tenant"})
+     * @Groups({"public_read_lodging_category"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"read_lodging","read_collection","read_tenant"})
+     * @Groups({"public_read_lodging_category"})
      */
-    private $name;
+    private $label;
 
     /**
-     * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="lodgingCategory")
+     * @ORM\OneToMany(targetEntity=LodgingType::class, mappedBy="lodgingCategory", orphanRemoval=true)
      */
-    private $lodgingCollection;
-
-    /**
-     * @ORM\ManyToMany(targetEntity=LodgingType::class, mappedBy="lodgingCategoryCollection")
-     */
-    private $lodgingTypes;
+    private $lodgingType;
 
     public function __construct()
     {
-        $this->lodgingCollection = new ArrayCollection();
-        $this->lodgingTypes = new ArrayCollection();
+        $uuid = Uuid::v4();;
+        $this->id = $uuid->jsonSerialize();
+        $this->lodgingType = new ArrayCollection();
     }
+
 
     public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getLabel(): ?string
     {
-        return $this->name;
+        return $this->label;
     }
 
-    public function setName(string $name): self
+    public function setLabel(string $name): self
     {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setIdValue()
-    {
-        $uuid = Uuid::v4();;
-        $this->id = $uuid->jsonSerialize();
-    }
-
-
-    /**
-     * @return Collection|Lodging[]
-     */
-    public function getLodgingCollection(): Collection
-    {
-        return $this->lodgingCollection;
-    }
-
-    public function addLodgingCollection(Lodging $lodgingCollection): self
-    {
-        if (!$this->lodgingCollection->contains($lodgingCollection)) {
-            $this->lodgingCollection[] = $lodgingCollection;
-            $lodgingCollection->setLodgingCategory($this);
-        }
-
-        return $this;
-    }
-
-    public function removeLodgingCollection(Lodging $lodgingCollection): self
-    {
-        if ($this->lodgingCollection->removeElement($lodgingCollection)) {
-            // set the owning side to null (unless already changed)
-            if ($lodgingCollection->getLodgingCategory() === $this) {
-                $lodgingCollection->setLodgingCategory(null);
-            }
-        }
+        $this->label = $name;
 
         return $this;
     }
@@ -106,16 +63,16 @@ class LodgingCategory
     /**
      * @return Collection|LodgingType[]
      */
-    public function getLodgingTypes(): Collection
+    public function getLodgingType(): Collection
     {
-        return $this->lodgingTypes;
+        return $this->lodgingType;
     }
 
     public function addLodgingType(LodgingType $lodgingType): self
     {
-        if (!$this->lodgingTypes->contains($lodgingType)) {
-            $this->lodgingTypes[] = $lodgingType;
-            $lodgingType->addLodgingCategoryCollection($this);
+        if (!$this->lodgingType->contains($lodgingType)) {
+            $this->lodgingType[] = $lodgingType;
+            $lodgingType->setLodgingCategory($this);
         }
 
         return $this;
@@ -123,10 +80,14 @@ class LodgingCategory
 
     public function removeLodgingType(LodgingType $lodgingType): self
     {
-        if ($this->lodgingTypes->removeElement($lodgingType)) {
-            $lodgingType->removeLodgingCategoryCollection($this);
+        if ($this->lodgingType->removeElement($lodgingType)) {
+            // set the owning side to null (unless already changed)
+            if ($lodgingType->getLodgingCategory() === $this) {
+                $lodgingType->setLodgingCategory(null);
+            }
         }
 
         return $this;
     }
+
 }

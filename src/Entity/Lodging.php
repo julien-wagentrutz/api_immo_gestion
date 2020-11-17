@@ -20,51 +20,21 @@ class Lodging
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"read_lodging","read_collection","read_tenant"})
+     * @Groups({"public_read_lodging"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"read_lodging","read_collection","read_tenant"})
+     * @Groups({"public_read_lodging"})
      */
     private $name;
 
     /**
-     * @ORM\Column(type="string", length=50)
-     * @Groups({"read_lodging","read_collection","read_tenant"})
-     */
-    private $state;
-
-    /**
      * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"read_lodging","read_collection","read_tenant"})
+     * @Groups({"public_read_lodging"})
      */
     private $price;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"read_lodging","read_collection","read_tenant"})
-     */
-    private $city;
-
-    /**
-     * @ORM\Column(type="string", length=10, nullable=true)
-     * @Groups({"read_lodging","read_collection","read_tenant"})
-     */
-    private $zipCode;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"read_lodging","read_collection","read_tenant"})
-     */
-    private $address;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"read_lodging","read_collection","read_tenant"})
-     */
-    private $complementAddress;
 
     /**
      * @ORM\Column(type="datetime")
@@ -80,45 +50,84 @@ class Lodging
 
     /**
      * @ORM\ManyToOne(targetEntity=LodgingType::class, inversedBy="lodgingCollection")
-     * @Groups({"read_lodging","read_collection","read_tenant"})
+     * @ORM\JoinColumn(nullable=false)
+     * @Groups({"public_read_lodging"})
      */
     private $lodgingType;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Collection::class, inversedBy="lodgingItems")
-     * @Groups({"read_lodging","read_tenant"})
+     * @ORM\ManyToOne(targetEntity=State::class, inversedBy="lodgings")
+     * @ORM\JoinColumn(nullable=false)
+     * @Groups({"public_read_lodging"})
      */
-    private $collection;
+    private $state;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Account::class, inversedBy="lodgingCollection")
+     * @ORM\OneToOne(targetEntity=Address::class, cascade={"persist", "remove"})
+     * @ORM\JoinColumn(nullable=false)
+     * @Groups({"public_read_lodging"})
+     */
+    private $address;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Group::class, inversedBy="lodgings")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $account;
+    private $groupId;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Tenant::class, mappedBy="lodgingCollection")
-     * @Groups({"read_lodging","read_collection"})
-     */
-    private $tenants;
-
-    /**
-     * @ORM\ManyToOne(targetEntity=LodgingCategory::class, inversedBy="lodgingCollection")
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="lodgingsCreate")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"read_lodging","read_collection","read_tenant"})
      */
-    private $lodgingCategory;
+    private $creator;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="lodgingModify")
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="lodgingsModifier")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"read_lodging"})
      */
-    private $nameLastModifier;
+    private $lastModifier;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Rent::class, mappedBy="lodging")
+     *
+     */
+    private $rents;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Intervention::class, mappedBy="lodging")
+     */
+    private $interventions;
 
     public function __construct()
     {
-        $this->tenants = new ArrayCollection();
+        $uuid = Uuid::v4();;
+        $this->id = $uuid->jsonSerialize();
+        $this->rents = new ArrayCollection();
+        $this->interventions = new ArrayCollection();
+        $this->lastUpdateAt = new \DateTime();
+        $this->createAt = new \DateTime();
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setLastUpdate(): self
+    {
+        $this->lastUpdateAt = new \DateTime();
+
+        return $this;
+    }
+
+    public function getState(): ?State
+    {
+        return $this->state;
+    }
+
+    public function setState(?State $state): self
+    {
+        $this->state = $state;
+
+        return $this;
     }
 
     public function getId(): ?string
@@ -138,18 +147,6 @@ class Lodging
         return $this;
     }
 
-    public function getState(): ?string
-    {
-        return $this->state;
-    }
-
-    public function setState(string $state): self
-    {
-        $this->state = $state;
-
-        return $this;
-    }
-
     public function getPrice(): ?int
     {
         return $this->price;
@@ -162,67 +159,9 @@ class Lodging
         return $this;
     }
 
-    public function getCity(): ?string
-    {
-        return $this->city;
-    }
-
-    public function setCity(?string $city): self
-    {
-        $this->city = $city;
-
-        return $this;
-    }
-
-    public function getZipCode(): ?string
-    {
-        return $this->zipCode;
-    }
-
-    public function setZipCode(?string $zipCode): self
-    {
-        $this->zipCode = $zipCode;
-
-        return $this;
-    }
-
-    public function getAddress(): ?string
-    {
-        return $this->address;
-    }
-
-    public function setAddress(?string $address): self
-    {
-        $this->address = $address;
-
-        return $this;
-    }
-
-    public function getComplementAddress(): ?string
-    {
-        return $this->complementAddress;
-    }
-
-    public function setComplementAddress(?string $complementAddress): self
-    {
-        $this->complementAddress = $complementAddress;
-
-        return $this;
-    }
-
     public function getCreateAt(): ?\DateTimeInterface
     {
         return $this->createAt;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setCreateAt(): self
-    {
-        $this->createAt = new \DateTime();
-
-        return $this;
     }
 
     public function getLastUpdateAt(): ?\DateTimeInterface
@@ -230,33 +169,11 @@ class Lodging
         return $this->lastUpdateAt;
     }
 
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setLastUpdate(): self
+    public function setLastUpdateAt(\DateTimeInterface $lastUpdateAt): self
     {
-        $this->lastUpdateAt = new \DateTime();
+        $this->lastUpdateAt = $lastUpdateAt;
 
         return $this;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setUpLastUpdate(): self
-    {
-        $this->lastUpdateAt = new \DateTime();
-
-        return $this;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setIdValue()
-    {
-        $uuid = Uuid::v4();;
-        $this->id = $uuid->jsonSerialize();
     }
 
     public function getLodgingType(): ?LodgingType
@@ -271,79 +188,120 @@ class Lodging
         return $this;
     }
 
-    public function getCollection(): ?Collection
+    public function getAddress(): ?Address
     {
-        return $this->collection;
+        return $this->address;
     }
 
-    public function setCollection(?Collection $collection): self
+    public function setAddress(Address $address): self
     {
-        $this->collection = $collection;
+        $this->address = $address;
 
         return $this;
     }
 
-    public function getAccount(): ?Account
+    public function getGroupId(): ?Group
     {
-        return $this->account;
+        return $this->groupId;
     }
 
-    public function setAccount(?Account $account): self
+    public function setGroupId(?Group $groupId): self
     {
-        $this->account = $account;
+        $this->groupId = $groupId;
+
+        return $this;
+    }
+
+    public function getCreator(): ?User
+    {
+        return $this->creator;
+    }
+
+    public function setCreator(?User $creator): self
+    {
+        $this->creator = $creator;
+
+        return $this;
+    }
+
+    public function getLastModifier(): ?User
+    {
+        return $this->lastModifier;
+    }
+
+    public function setLastModifier(?User $lastModifier): self
+    {
+        $this->lastModifier = $lastModifier;
 
         return $this;
     }
 
     /**
-     * @return Collection|Tenant[]
+     * @return CollectionDoctrine|Rent[]
      */
-    public function getTenants(): CollectionDoctrine
+    public function getRents(): CollectionDoctrine
     {
-        return $this->tenants;
+        return $this->rents;
     }
 
-    public function addTenant(Tenant $tenant): self
+    public function addRent(Rent $rent): self
     {
-        if (!$this->tenants->contains($tenant)) {
-            $this->tenants[] = $tenant;
-            $tenant->addLodgingCollection($this);
+        if (!$this->rents->contains($rent)) {
+            $this->rents[] = $rent;
+            $rent->setLodging($this);
         }
 
         return $this;
     }
 
-    public function removeTenant(Tenant $tenant): self
+    public function removeRent(Rent $rent): self
     {
-        if ($this->tenants->removeElement($tenant)) {
-            $tenant->removeLodgingCollection($this);
+        if ($this->rents->removeElement($rent)) {
+            // set the owning side to null (unless already changed)
+            if ($rent->getLodging() === $this) {
+                $rent->setLodging(null);
+            }
         }
 
         return $this;
     }
 
-    public function getLodgingCategory(): ?LodgingCategory
+    /**
+     * @return CollectionDoctrine|Intervention[]
+     */
+    public function getInterventions(): CollectionDoctrine
     {
-        return $this->lodgingCategory;
+        return $this->interventions;
     }
 
-    public function setLodgingCategory(?LodgingCategory $lodgingCategory): self
+    public function addIntervention(Intervention $intervention): self
     {
-        $this->lodgingCategory = $lodgingCategory;
+        if (!$this->interventions->contains($intervention)) {
+            $this->interventions[] = $intervention;
+            $intervention->setLodging($this);
+        }
 
         return $this;
     }
 
-    public function getNameLastModifier(): ?User
+    public function removeIntervention(Intervention $intervention): self
     {
-        return $this->nameLastModifier;
-    }
-
-    public function setNameLastModifier(?User $nameLastModifier): self
-    {
-        $this->nameLastModifier = $nameLastModifier;
+        if ($this->interventions->removeElement($intervention)) {
+            // set the owning side to null (unless already changed)
+            if ($intervention->getLodging() === $this) {
+                $intervention->setLodging(null);
+            }
+        }
 
         return $this;
     }
+
+    public function setCreateAt(\DateTimeInterface $createAt): self
+    {
+        $this->createAt = $createAt;
+
+        return $this;
+    }
+
 
 }

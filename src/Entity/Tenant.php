@@ -19,19 +19,19 @@ class Tenant
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"read_user", "read_lodging", "read_collection","read_tenant"})
+     * @Groups({"public_read_tenant"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"read_tenant"})
+     * @Groups({"public_read_tenant"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"read_tenant"})
+     * @Groups({"public_read_tenant"})
      */
     private $lastName;
 
@@ -54,25 +54,6 @@ class Tenant
     private $email;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Account::class, mappedBy="tenants")
-     * @Groups({"read_tenant"})
-     */
-    private $accounts;
-
-    /**
-     * @ORM\ManyToMany(targetEntity=Lodging::class, inversedBy="tenants")
-     * @Groups({"read_tenant"})
-     */
-    private $lodgingCollection;
-
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="tenantsModify")
-     * @ORM\JoinColumn(nullable=false)
-     * @Groups({"read_tenant"})
-     */
-    private $nameLastModifier;
-
-    /**
      * @ORM\Column(type="datetime")
      */
     private $createdAt;
@@ -83,13 +64,171 @@ class Tenant
     private $lastUpdateAt;
 
 
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $creator;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $lastModifier;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Account::class, inversedBy="tenants")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $account;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Rent::class, mappedBy="tenant")
+     * @Groups({"public_read_tenant"})
+     */
+    private $rents;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Intervention::class, mappedBy="tenant")
+     * @Groups({"public_read_tenant"})
+     */
+    private $interventions;
+
+    /**
+     * @ORM\OneToOne(targetEntity=User::class, inversedBy="tenant", cascade={"persist", "remove"})
+     */
+    private $user;
+
+
 
     public function __construct()
     {
-        $this->accounts = new ArrayCollection();
-        $this->lodgingCollection = new ArrayCollection();
+        $uuid = Uuid::v4();;
+        $this->id = $uuid->jsonSerialize();
+        $this->lastUpdateAt = new \DateTime();
+        $this->createdAt = new \DateTime();
+        $this->rents = new ArrayCollection();
+        $this->interventions = new ArrayCollection();
+
     }
 
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setLastUpdate(): self
+    {
+        $this->lastUpdateAt = new \DateTime();
+
+        return $this;
+    }
+
+    public function getCreator(): ?User
+    {
+        return $this->creator;
+    }
+
+    public function setCreator(?User $creator): self
+    {
+        $this->creator = $creator;
+
+        return $this;
+    }
+
+    public function getLastModifier(): ?User
+    {
+        return $this->lastModifier;
+    }
+
+    public function setLastModifier(?User $lastModifier): self
+    {
+        $this->lastModifier = $lastModifier;
+
+        return $this;
+    }
+
+    public function getAccount(): ?Account
+    {
+        return $this->account;
+    }
+
+    public function setAccount(?Account $account): self
+    {
+        $this->account = $account;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Rent[]
+     */
+    public function getRents(): Collection
+    {
+        return $this->rents;
+    }
+
+    public function addRent(Rent $rent): self
+    {
+        if (!$this->rents->contains($rent)) {
+            $this->rents[] = $rent;
+            $rent->setTenant($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRent(Rent $rent): self
+    {
+        if ($this->rents->removeElement($rent)) {
+            // set the owning side to null (unless already changed)
+            if ($rent->getTenant() === $this) {
+                $rent->setTenant(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Intervention[]
+     */
+    public function getInterventions(): Collection
+    {
+        return $this->interventions;
+    }
+
+    public function addIntervention(Intervention $intervention): self
+    {
+        if (!$this->interventions->contains($intervention)) {
+            $this->interventions[] = $intervention;
+            $intervention->setTenant($this);
+        }
+
+        return $this;
+    }
+
+    public function removeIntervention(Intervention $intervention): self
+    {
+        if ($this->interventions->removeElement($intervention)) {
+            // set the owning side to null (unless already changed)
+            if ($intervention->getTenant() === $this) {
+                $intervention->setTenant(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
+
+        return $this;
+    }
 
     public function getId(): ?string
     {
@@ -156,72 +295,6 @@ class Tenant
         return $this;
     }
 
-
-
-    /**
-     * @return Collection|Account[]
-     */
-    public function getAccounts(): Collection
-    {
-        return $this->accounts;
-    }
-
-    public function addAccount(Account $account): self
-    {
-        if (!$this->accounts->contains($account)) {
-            $this->accounts[] = $account;
-            $account->addTenant($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAccount(Account $account): self
-    {
-        if ($this->accounts->removeElement($account)) {
-            $account->removeTenant($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Lodging[]
-     */
-    public function getLodgingCollection(): Collection
-    {
-        return $this->lodgingCollection;
-    }
-
-    public function addLodgingCollection(Lodging $lodgingCollection): self
-    {
-        if (!$this->lodgingCollection->contains($lodgingCollection)) {
-            $this->lodgingCollection[] = $lodgingCollection;
-        }
-
-        return $this;
-    }
-
-    public function removeLodgingCollection(Lodging $lodgingCollection): self
-    {
-        $this->lodgingCollection->removeElement($lodgingCollection);
-
-        return $this;
-    }
-
-
-    public function getNameLastModifier(): ?User
-    {
-        return $this->nameLastModifier;
-    }
-
-    public function setNameLastModifier(?User $user): self
-    {
-        $this->nameLastModifier = $user;
-
-        return $this;
-    }
-
     public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->createdAt;
@@ -246,43 +319,5 @@ class Tenant
         return $this;
     }
 
-    /**
-     * @ORM\PrePersist
-     */
-    public function setIdValue()
-    {
-        $uuid = Uuid::v4();;
-        $this->id = $uuid->jsonSerialize();
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setLastUpdate(): self
-    {
-        $this->lastUpdateAt = new \DateTime();
-
-        return $this;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setUpLastUpdate(): self
-    {
-        $this->lastUpdateAt = new \DateTime();
-
-        return $this;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setCreateAt(): self
-    {
-        $this->createdAt = new \DateTime();
-
-        return $this;
-    }
 
 }

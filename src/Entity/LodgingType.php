@@ -20,28 +20,34 @@ class LodgingType
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
+     * @Groups({"public_read_lodging_type"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"public_read_lodging_type"})
      */
-    private $name;
+    private $label;
+
 
     /**
-     * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="lodgingType")
+     * @ORM\ManyToOne(targetEntity=LodgingCategory::class, inversedBy="lodgingType")
+     * @ORM\JoinColumn(nullable=false)
+     * @Groups({"public_read_lodging_type"})
+     */
+    private $lodgingCategory;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="lodgingType", cascade={"persist", "remove"})
      */
     private $lodgingCollection;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=LodgingCategory::class, inversedBy="lodgingTypes")
-     */
-    private $lodgingCategoryCollection;
-
     public function __construct()
     {
+        $uuid = Uuid::v4();;
+        $this->id = $uuid->jsonSerialize();
         $this->lodgingCollection = new ArrayCollection();
-        $this->lodgingCategoryCollection = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -49,25 +55,28 @@ class LodgingType
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getLabel(): ?string
     {
-        return $this->name;
+        return $this->label;
     }
 
-    public function setName(string $name): self
+    public function setLabel(string $label): self
     {
-        $this->name = $name;
+        $this->label = $label;
 
         return $this;
     }
 
-    /**
-     * @ORM\PrePersist
-     */
-    public function setIdValue()
+    public function getLodgingCategory(): ?LodgingCategory
     {
-        $uuid = Uuid::v4();;
-        $this->id = $uuid->jsonSerialize();
+        return $this->lodgingCategory;
+    }
+
+    public function setLodgingCategory(?LodgingCategory $lodgingCategory): self
+    {
+        $this->lodgingCategory = $lodgingCategory;
+
+        return $this;
     }
 
     /**
@@ -100,27 +109,4 @@ class LodgingType
         return $this;
     }
 
-    /**
-     * @return Collection|LodgingCategory[]
-     */
-    public function getLodgingCategoryCollection(): Collection
-    {
-        return $this->lodgingCategoryCollection;
-    }
-
-    public function addLodgingCategoryCollection(LodgingCategory $lodgingCategoryCollection): self
-    {
-        if (!$this->lodgingCategoryCollection->contains($lodgingCategoryCollection)) {
-            $this->lodgingCategoryCollection[] = $lodgingCategoryCollection;
-        }
-
-        return $this;
-    }
-
-    public function removeLodgingCategoryCollection(LodgingCategory $lodgingCategoryCollection): self
-    {
-        $this->lodgingCategoryCollection->removeElement($lodgingCategoryCollection);
-
-        return $this;
-    }
 }

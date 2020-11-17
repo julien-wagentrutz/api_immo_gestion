@@ -19,105 +19,116 @@ class Account
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"read_user", "read_account","read_tenant"})
+     * @Groups({"public_read_account"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=50)
-     * @Groups({"read_account"})
+     * @Groups({"public_read_account"})
      */
-    private $state;
+    private $type;
 
     /**
-     * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="account", orphanRemoval=true)
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="accounts")
+     * @ORM\JoinColumn(nullable=false)
+     * @Groups({"private_read_account"})
      */
-    private $lodgingCollection;
+    private $creator;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Tenant::class, inversedBy="accounts")
+     * @ORM\OneToOne(targetEntity=Address::class, cascade={"persist", "remove"})
+     * @Groups({"public_read_account"})
+     */
+    private $address;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Group::class, mappedBy="account", orphanRemoval=true)
+     * @Groups({"private_read_account"})
+     */
+    private $groups;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Invitation::class, mappedBy="account", orphanRemoval=true)
+     * @Groups({"private_read_account"})
+     */
+    private $invitations;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Tenant::class, mappedBy="account")
+     * @Groups({"private_read_account"})
      */
     private $tenants;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=User::class, mappedBy="accounts")
-     * @Groups({"read_account"})
-     */
-    private $users;
-
-    /**
-     *
-     * @ORM\OneToMany(targetEntity=User::class, mappedBy="lastAccountSelected")
-     * @Groups({"read_account"})
-     */
-    private $usersLastAccount;
-
-    /**
-     * @ORM\OneToMany(targetEntity=Collection::class, mappedBy="account", orphanRemoval=true)
-     * @Groups({"read_account"})
-     */
-    private $collections;
-
-
     public function __construct()
     {
-        $this->lodgingCollection = new ArrayCollection();
+        $uuid = Uuid::v4();;
+        $this->id = $uuid->jsonSerialize();
+        $this->groups = new ArrayCollection();
+        $this->invitations = new ArrayCollection();
         $this->tenants = new ArrayCollection();
-        $this->users = new ArrayCollection();
-        $this->usersLastAccount = new ArrayCollection();
-        $this->collections = new ArrayCollection();
     }
 
-    public function getId(): ?string
+    public function getType(): ?string
     {
-        return $this->id;
+        return $this->type;
     }
 
-    public function getState(): ?string
+    public function setType(string $type): self
     {
-        return $this->state;
+        $this->type = $type;
+
+        return $this;
     }
 
-    public function setState(string $state): self
+    public function getCreator(): ?User
     {
-        $this->state = $state;
+        return $this->creator;
+    }
+
+    public function setCreator(?User $creator): self
+    {
+        $this->creator = $creator;
+
+        return $this;
+    }
+
+    public function getAddress(): ?Address
+    {
+        return $this->address;
+    }
+
+    public function setAddress(?Address $address): self
+    {
+        $this->address = $address;
 
         return $this;
     }
 
     /**
-     * @ORM\PrePersist
+     * @return CollectionDoctrine|Group[]
      */
-    public function setIdValue()
+    public function getGroups(): CollectionDoctrine
     {
-        $uuid = Uuid::v4();;
-        $this->id = $uuid->jsonSerialize();
+        return $this->groups;
     }
 
-    /**
-     * @return Collection|Lodging[]
-     */
-    public function getLodgingCollection(): CollectionDoctrine
+    public function addGroup(Group $group): self
     {
-        return $this->lodgingCollection;
-    }
-
-    public function addLodgingCollection(Lodging $lodgingCollection): self
-    {
-        if (!$this->lodgingCollection->contains($lodgingCollection)) {
-            $this->lodgingCollection[] = $lodgingCollection;
-            $lodgingCollection->setAccount($this);
+        if (!$this->groups->contains($group)) {
+            $this->groups[] = $group;
+            $group->setAccount($this);
         }
 
         return $this;
     }
 
-    public function removeLodgingCollection(Lodging $lodgingCollection): self
+    public function removeGroup(Group $group): self
     {
-        if ($this->lodgingCollection->removeElement($lodgingCollection)) {
+        if ($this->groups->removeElement($group)) {
             // set the owning side to null (unless already changed)
-            if ($lodgingCollection->getAccount() === $this) {
-                $lodgingCollection->setAccount(null);
+            if ($group->getAccount() === $this) {
+                $group->setAccount(null);
             }
         }
 
@@ -125,7 +136,37 @@ class Account
     }
 
     /**
-     * @return Collection|Tenant[]
+     * @return CollectionDoctrine|Invitation[]
+     */
+    public function getInvitations(): CollectionDoctrine
+    {
+        return $this->invitations;
+    }
+
+    public function addInvitation(Invitation $invitation): self
+    {
+        if (!$this->invitations->contains($invitation)) {
+            $this->invitations[] = $invitation;
+            $invitation->setAccount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInvitation(Invitation $invitation): self
+    {
+        if ($this->invitations->removeElement($invitation)) {
+            // set the owning side to null (unless already changed)
+            if ($invitation->getAccount() === $this) {
+                $invitation->setAccount(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return CollectionDoctrine|Tenant[]
      */
     public function getTenants(): CollectionDoctrine
     {
@@ -136,6 +177,7 @@ class Account
     {
         if (!$this->tenants->contains($tenant)) {
             $this->tenants[] = $tenant;
+            $tenant->setAccount($this);
         }
 
         return $this;
@@ -143,96 +185,19 @@ class Account
 
     public function removeTenant(Tenant $tenant): self
     {
-        $this->tenants->removeElement($tenant);
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|User[]
-     */
-    public function getUsers(): CollectionDoctrine
-    {
-        return $this->users;
-    }
-
-    public function addUser(User $user): self
-    {
-        if (!$this->users->contains($user)) {
-            $this->users[] = $user;
-            $user->addAccount($this);
-        }
-
-        return $this;
-    }
-
-    public function removeUser(User $user): self
-    {
-        if ($this->users->removeElement($user)) {
-            $user->removeAccount($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|User[]
-     */
-    public function getUsersLastAccount(): CollectionDoctrine
-    {
-        return $this->usersLastAccount;
-    }
-
-    public function addUsersLastAccount(User $usersLastAccount): self
-    {
-        if (!$this->usersLastAccount->contains($usersLastAccount)) {
-            $this->usersLastAccount[] = $usersLastAccount;
-            $usersLastAccount->setLastAccountSelected($this);
-        }
-
-        return $this;
-    }
-
-    public function removeUsersLastAccount(User $usersLastAccount): self
-    {
-        if ($this->usersLastAccount->removeElement($usersLastAccount)) {
+        if ($this->tenants->removeElement($tenant)) {
             // set the owning side to null (unless already changed)
-            if ($usersLastAccount->getLastAccountSelected() === $this) {
-                $usersLastAccount->setLastAccountSelected(null);
+            if ($tenant->getAccount() === $this) {
+                $tenant->setAccount(null);
             }
         }
 
         return $this;
     }
 
-    /**
-     * @return CollectionDoctrine|Collection[]
-     */
-    public function getCollections(): CollectionDoctrine
+    public function getId(): ?string
     {
-        return $this->collections;
-    }
-
-    public function addCollection(Collection $collection): self
-    {
-        if (!$this->collections->contains($collection)) {
-            $this->collections[] = $collection;
-            $collection->setAccount($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCollection(Collection $collection): self
-    {
-        if ($this->collections->removeElement($collection)) {
-            // set the owning side to null (unless already changed)
-            if ($collection->getAccount() === $this) {
-                $collection->setAccount(null);
-            }
-        }
-
-        return $this;
+        return $this->id;
     }
 
 }

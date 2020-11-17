@@ -20,13 +20,13 @@ class User implements UserInterface
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"read_user", "read_lodging","read_account","read_tenant"})
+     * @Groups({"read_user", "read_lodging","read_account","read_tenant","public_read_user"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Groups({"read_user"})
+     * @Groups({"read_user","public_read_user"})
      */
     private $email;
 
@@ -45,13 +45,13 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Groups({"read_user","read_lodging","read_account"})
+     * @Groups({"read_user","read_lodging","read_account","public_read_user"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Groups({"read_user","read_lodging","read_account"})
+     * @Groups({"read_user","read_lodging","read_account","public_read_user"})
      */
     private $lastName;
 
@@ -63,56 +63,82 @@ class User implements UserInterface
 
      /**
       * @ORM\Column(type="string", unique=true)
+      * @Groups({"read_user"})
       */
      private $apiToken;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Account::class, inversedBy="users")
+     * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="creator")
+     */
+    private $lodgingsCreate;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="lastModifier")
+     */
+    private $lodgingsModifier;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Account::class, mappedBy="creator")
      * @Groups({"read_user"})
      */
     private $accounts;
 
     /**
-     * @ORM\OneToMany(targetEntity=Tenant::class, mappedBy="nameLastModifier")
+     * @ORM\OneToOne(targetEntity=Address::class, cascade={"persist", "remove"})
+     * @Groups({"public_read_user"})
      */
-    private $tenantsModify;
+    private $address;
 
     /**
-     * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="nameLastModifier")
+     * @ORM\OneToMany(targetEntity=Invitation::class, mappedBy="userSender")
      */
-    private $lodgingModify;
+    private $invitationsSent;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Account::class, inversedBy="usersLastAccount")
-     * @ORM\JoinColumn()
-     * @Groups({"read_user"})
+     * @ORM\OneToMany(targetEntity=Invitation::class, mappedBy="userRecipient", orphanRemoval=true)
      */
-    private $lastAccountSelected;
+    private $invitationsReceived;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Message::class, mappedBy="sender")
+     */
+    private $messagesSent;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Message::class, mappedBy="recipientUser")
+     */
+    private $messagesRecipient;
+
+    /**
+     * @ORM\OneToOne(targetEntity=Tenant::class, mappedBy="user", cascade={"persist", "remove"})
+     */
+    private $tenant;
+
+    /**
+     * @ORM\Column(type="string", length=10)
+     */
+    private $themeUse;
+
 
 
     public function __construct()
     {
+        $this->themeUse = 'white';
+        $uuid = Uuid::v4();;
+        $this->id = $uuid->jsonSerialize();
+        $uuid = Uuid::v4();;
+        $this->apiToken = $uuid->jsonSerialize();
+        $this->createdAt = new \DateTime();
         $this->accounts = new ArrayCollection();
-        $this->tenantsModify = new ArrayCollection();
-        $this->lodgingModify = new ArrayCollection();
+        $this->invitationsSent = new ArrayCollection();
+        $this->invitationsReceived = new ArrayCollection();
+        $this->messagesSent = new ArrayCollection();
+        $this->messagesRecipient = new ArrayCollection();
+        $this->tenants = new ArrayCollection();
+        $this->lodgingsCreate = new ArrayCollection();
+        $this->lodgingsModifier = new ArrayCollection();
     }
 
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
-
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
-
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-
-        return $this;
-    }
 
     /**
      * A visual identifier that represents this user.
@@ -175,6 +201,41 @@ class User implements UserInterface
         // $this->plainPassword = null;
     }
 
+    public function getTenant(): ?Tenant
+    {
+        return $this->tenant;
+    }
+
+    public function setTenant(?Tenant $tenant): self
+    {
+        $this->tenant = $tenant;
+
+        // set (or unset) the owning side of the relation if necessary
+        $newUser = null === $tenant ? null : $this;
+        if ($tenant->getUser() !== $newUser) {
+            $tenant->setUser($newUser);
+        }
+
+        return $this;
+    }
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
     public function getName(): ?string
     {
         return $this->name;
@@ -211,30 +272,76 @@ class User implements UserInterface
         return $this;
     }
 
-    /**
-     * @ORM\PrePersist
-     */
-    public function setCreatedAtValue()
+    public function getApiToken(): ?string
     {
-        $this->createdAt = new \DateTime();
+        return $this->apiToken;
+    }
+
+    public function setApiToken(string $apiToken): self
+    {
+        $this->apiToken = $apiToken;
+
+        return $this;
     }
 
     /**
-     * @ORM\PrePersist
+     * @return Collection|Lodging[]
      */
-    public function setIdValue()
+    public function getLodgingsCreate(): Collection
     {
-        $uuid = Uuid::v4();;
-        $this->id = $uuid->jsonSerialize();
+        return $this->lodgingsCreate;
+    }
+
+    public function addLodgingsCreate(Lodging $lodgingsCreate): self
+    {
+        if (!$this->lodgingsCreate->contains($lodgingsCreate)) {
+            $this->lodgingsCreate[] = $lodgingsCreate;
+            $lodgingsCreate->setCreator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLodgingsCreate(Lodging $lodgingsCreate): self
+    {
+        if ($this->lodgingsCreate->removeElement($lodgingsCreate)) {
+            // set the owning side to null (unless already changed)
+            if ($lodgingsCreate->getCreator() === $this) {
+                $lodgingsCreate->setCreator(null);
+            }
+        }
+
+        return $this;
     }
 
     /**
-     * @ORM\PrePersist
+     * @return Collection|Lodging[]
      */
-    public function setTokenValue()
+    public function getLodgingsModifier(): Collection
     {
-        $uuid = Uuid::v4();;
-        $this->apiToken = $uuid->jsonSerialize();
+        return $this->lodgingsModifier;
+    }
+
+    public function addLodgingsModifier(Lodging $lodgingsModifier): self
+    {
+        if (!$this->lodgingsModifier->contains($lodgingsModifier)) {
+            $this->lodgingsModifier[] = $lodgingsModifier;
+            $lodgingsModifier->setLastModifier($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLodgingsModifier(Lodging $lodgingsModifier): self
+    {
+        if ($this->lodgingsModifier->removeElement($lodgingsModifier)) {
+            // set the owning side to null (unless already changed)
+            if ($lodgingsModifier->getLastModifier() === $this) {
+                $lodgingsModifier->setLastModifier(null);
+            }
+        }
+
+        return $this;
     }
 
     /**
@@ -249,6 +356,7 @@ class User implements UserInterface
     {
         if (!$this->accounts->contains($account)) {
             $this->accounts[] = $account;
+            $account->setCreator($this);
         }
 
         return $this;
@@ -256,35 +364,52 @@ class User implements UserInterface
 
     public function removeAccount(Account $account): self
     {
-        $this->accounts->removeElement($account);
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Tenant[]
-     */
-    public function getTenantsModify(): Collection
-    {
-        return $this->tenantsModify;
-    }
-
-    public function addTenantsModify(Tenant $tenantsModify): self
-    {
-        if (!$this->tenantsModify->contains($tenantsModify)) {
-            $this->tenantsModify[] = $tenantsModify;
-            $tenantsModify->setUser($this);
+        if ($this->accounts->removeElement($account)) {
+            // set the owning side to null (unless already changed)
+            if ($account->getCreator() === $this) {
+                $account->setCreator(null);
+            }
         }
 
         return $this;
     }
 
-    public function removeTenantsModify(Tenant $tenantsModify): self
+    public function getAddress(): ?Address
     {
-        if ($this->tenantsModify->removeElement($tenantsModify)) {
+        return $this->address;
+    }
+
+    public function setAddress(?Address $address): self
+    {
+        $this->address = $address;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Invitation[]
+     */
+    public function getInvitationsSent(): Collection
+    {
+        return $this->invitationsSent;
+    }
+
+    public function addInvitationsSent(Invitation $invitationsSent): self
+    {
+        if (!$this->invitationsSent->contains($invitationsSent)) {
+            $this->invitationsSent[] = $invitationsSent;
+            $invitationsSent->setUserSender($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInvitationsSent(Invitation $invitationsSent): self
+    {
+        if ($this->invitationsSent->removeElement($invitationsSent)) {
             // set the owning side to null (unless already changed)
-            if ($tenantsModify->getUser() === $this) {
-                $tenantsModify->setUser(null);
+            if ($invitationsSent->getUserSender() === $this) {
+                $invitationsSent->setUserSender(null);
             }
         }
 
@@ -292,56 +417,111 @@ class User implements UserInterface
     }
 
     /**
-     * @return Collection|Lodging[]
+     * @return Collection|Invitation[]
      */
-    public function getLodgingModify(): Collection
+    public function getInvitationsReceived(): Collection
     {
-        return $this->lodgingModify;
+        return $this->invitationsReceived;
     }
 
-    public function addLodgingModify(Lodging $lodgingModify): self
+    public function addInvitationsReceived(Invitation $invitationsReceived): self
     {
-        if (!$this->lodgingModify->contains($lodgingModify)) {
-            $this->lodgingModify[] = $lodgingModify;
-            $lodgingModify->setNameLastModifier($this);
+        if (!$this->invitationsReceived->contains($invitationsReceived)) {
+            $this->invitationsReceived[] = $invitationsReceived;
+            $invitationsReceived->setUserRecipient($this);
         }
 
         return $this;
     }
 
-    public function removeLodgingModify(Lodging $lodgingModify): self
+    public function removeInvitationsReceived(Invitation $invitationsReceived): self
     {
-        if ($this->lodgingModify->removeElement($lodgingModify)) {
+        if ($this->invitationsReceived->removeElement($invitationsReceived)) {
             // set the owning side to null (unless already changed)
-            if ($lodgingModify->getNameLastModifier() === $this) {
-                $lodgingModify->setNameLastModifier(null);
+            if ($invitationsReceived->getUserRecipient() === $this) {
+                $invitationsReceived->setUserRecipient(null);
             }
         }
 
         return $this;
     }
 
-    public function getLastAccountSelected(): ?Account
+    /**
+     * @return Collection|Message[]
+     */
+    public function getMessagesSent(): Collection
     {
-        return $this->lastAccountSelected;
+        return $this->messagesSent;
     }
 
-    public function setLastAccountSelected(?Account $lastAccountSelected): self
+    public function addMessagesSent(Message $messagesSent): self
     {
-        $this->lastAccountSelected = $lastAccountSelected;
+        if (!$this->messagesSent->contains($messagesSent)) {
+            $this->messagesSent[] = $messagesSent;
+            $messagesSent->setSender($this);
+        }
 
         return $this;
     }
 
-    public function getApiToken(): ?string
+    public function removeMessagesSent(Message $messagesSent): self
     {
-        return $this->apiToken;
-    }
-
-    public function setApiToken(?string $apiToken): self
-    {
-        $this->apiToken = $apiToken;
+        if ($this->messagesSent->removeElement($messagesSent)) {
+            // set the owning side to null (unless already changed)
+            if ($messagesSent->getSender() === $this) {
+                $messagesSent->setSender(null);
+            }
+        }
 
         return $this;
     }
+
+    /**
+     * @return Collection|Message[]
+     */
+    public function getMessagesRecipient(): Collection
+    {
+        return $this->messagesRecipient;
+    }
+
+    public function addMessagesRecipient(Message $messagesRecipient): self
+    {
+        if (!$this->messagesRecipient->contains($messagesRecipient)) {
+            $this->messagesRecipient[] = $messagesRecipient;
+            $messagesRecipient->setRecipientUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessagesRecipient(Message $messagesRecipient): self
+    {
+        if ($this->messagesRecipient->removeElement($messagesRecipient)) {
+            // set the owning side to null (unless already changed)
+            if ($messagesRecipient->getRecipientUser() === $this) {
+                $messagesRecipient->setRecipientUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getThemeUse(): ?string
+    {
+        return $this->themeUse;
+    }
+
+    public function setThemeUse(string $themeUse): self
+    {
+        $this->themeUse = $themeUse;
+
+        return $this;
+    }
+
+    public function equals(User $user):bool
+    {
+        if($this->getId() == $user->getId()) {return true;}
+        return false;
+    }
+
 }
