@@ -39,8 +39,14 @@ class User implements UserInterface
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
+     * @Groups({"private_read_user"})
      */
     private $password;
+
+    /**
+     * @Groups({"private_read_user"})
+     */
+    private $plainPassword;
 
     /**
      * @ORM\Column(type="string", length=100)
@@ -202,8 +208,7 @@ class User implements UserInterface
      */
     public function eraseCredentials()
     {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+         $this->plainPassword = null;
     }
 
     public function getTenant(): ?Tenant
@@ -541,6 +546,22 @@ class User implements UserInterface
         }
 
         return $isIn;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPlainPassword()
+    {
+        return $this->plainPassword;
+    }
+
+    /**
+     * @param mixed $plainPassword
+     */
+    public function setPlainPassword($plainPassword): void
+    {
+        $this->plainPassword = $plainPassword;
     }
 
 }

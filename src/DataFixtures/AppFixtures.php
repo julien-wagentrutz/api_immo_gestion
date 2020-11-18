@@ -53,7 +53,7 @@ class AppFixtures extends Fixture
      {
          $this->julien = new User();
          $this->julien->setEmail("julien.wgtz@outlook.com");
-         $this->julien->setPassword('Julien68');
+         $this->julien->setPassword($this->passwordEncoder->encodePassword($this->julien,'Julien68'));
          $this->julien->setName("Julien");
          $this->julien->setLastName('Wagentrutz');
 
@@ -70,7 +70,7 @@ class AppFixtures extends Fixture
 
          $this->mathieu = new User();
          $this->mathieu->setEmail("mathieu.frantz@gmail.com");
-         $this->mathieu->setPassword('Frantzy652');
+         $this->mathieu->setPassword($this->passwordEncoder->encodePassword($this->mathieu,'Frantzy652'));
          $this->mathieu->setName("mathieu");
          $this->mathieu->setLastName('Frantz');
 
@@ -88,7 +88,7 @@ class AppFixtures extends Fixture
 
          $this->antoine = new User();
          $this->antoine->setEmail("antoine.bourdelle@gmail.com");
-         $this->antoine->setPassword('bourdelleElPaso33');
+         $this->antoine->setPassword($this->passwordEncoder->encodePassword($this->antoine,'bourdelleElPaso33'));
          $this->antoine->setName("Antoine");
          $this->antoine->setLastName('Bourdelle');
 
@@ -106,7 +106,7 @@ class AppFixtures extends Fixture
 
          $this->arnold = new User();
          $this->arnold->setEmail("arnold.schwarzenegger@gmail.com");
-         $this->arnold->setPassword('Schwarzy68');
+         $this->arnold->setPassword($this->passwordEncoder->encodePassword($this->arnold,'Schwarzy68'));
          $this->arnold->setName("Arnold");
          $this->arnold->setLastName('Schwarzenegger');
 

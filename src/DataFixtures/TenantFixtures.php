@@ -11,6 +11,7 @@ use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class TenantFixtures extends Fixture implements DependentFixtureInterface
 {
@@ -25,6 +26,11 @@ class TenantFixtures extends Fixture implements DependentFixtureInterface
     private $tenant4;
     private $tenant5;
     private $tenant6;
+
+    public function __construct(UserPasswordEncoderInterface $passwordEncoder)
+    {
+        $this->passwordEncoder = $passwordEncoder;
+    }
 
     public function getDependencies()
     {
@@ -47,7 +53,7 @@ class TenantFixtures extends Fixture implements DependentFixtureInterface
 
         $mary = new User();
         $mary->setEmail("mary.burnett@gmail.com");
-        $mary->setPassword('buburne');
+        $mary->setPassword($this->passwordEncoder->encodePassword($mary,'buburne'));
         $mary->setName('Mary');
         $mary->setLastName('Burnet');
 
@@ -59,7 +65,7 @@ class TenantFixtures extends Fixture implements DependentFixtureInterface
 
         $beatrice = new User();
         $beatrice->setEmail("beatrice.reddin@gmail.com");
-        $beatrice->setPassword('radin55');
+        $beatrice->setPassword($this->passwordEncoder->encodePassword($beatrice,'radin55'));
         $beatrice->setName('Beatrice');
         $beatrice->setLastName('Reddin');
 
@@ -71,7 +77,7 @@ class TenantFixtures extends Fixture implements DependentFixtureInterface
 
         $betty = new User();
         $betty->setEmail("betty.damron@gmail.com");
-        $betty->setPassword('BabyBetty69');
+        $betty->setPassword($this->passwordEncoder->encodePassword($betty,'BabyBetty69'));
         $betty->setName('Betty');
         $betty->setLastName('Damron');
 
@@ -84,7 +90,7 @@ class TenantFixtures extends Fixture implements DependentFixtureInterface
 
         $melanie = new User();
         $melanie->setEmail("melanie.vasquez@gmail.com");
-        $melanie->setPassword('vasqii44ffk');
+        $melanie->setPassword($this->passwordEncoder->encodePassword($melanie,'vasqii44ffk'));
         $melanie->setName('Melanie');
         $melanie->setLastName('Vasquez');
 
