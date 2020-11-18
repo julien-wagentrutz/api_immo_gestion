@@ -20,52 +20,50 @@ class Lodging
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"public_read_lodging"})
+     * @Groups({"public_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"public_read_lodging"})
+     * @Groups({"public_read"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"public_read_lodging"})
+     * @Groups({"public_read"})
      */
     private $price;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups({"read_lodging","read_collection"})
      */
     private $createAt;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups({"read_lodging"})
      */
     private $lastUpdateAt;
 
     /**
      * @ORM\ManyToOne(targetEntity=LodgingType::class, inversedBy="lodgingCollection")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"public_read_lodging"})
+     * @Groups({"public_read"})
      */
     private $lodgingType;
 
     /**
      * @ORM\ManyToOne(targetEntity=State::class, inversedBy="lodgings")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"public_read_lodging"})
+     * @Groups({"public_read"})
      */
     private $state;
 
     /**
      * @ORM\OneToOne(targetEntity=Address::class, cascade={"persist", "remove"})
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"public_read_lodging"})
+     * @Groups({"public_read"})
      */
     private $address;
 

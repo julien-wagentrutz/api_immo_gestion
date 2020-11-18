@@ -20,55 +20,55 @@ class User implements UserInterface
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"read_user", "read_lodging","read_account","read_tenant","public_read_user"})
+     * @Groups({"public_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Groups({"read_user","public_read_user"})
+     * @Groups({"public_read"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="json")
-     * @Groups({"read_user"})
+     * @Groups({"private_read_user"})
      */
     private $roles = [];
 
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
-     * @Groups({"read_user"})
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Groups({"read_user","read_lodging","read_account","public_read_user"})
+     * @Groups({"public_read"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Groups({"read_user","read_lodging","read_account","public_read_user"})
+     * @Groups({"public_read"})
      */
     private $lastName;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups({"read_user"})
+     * @Groups({"private_read_user"})
      */
     private $createdAt;
 
      /**
       * @ORM\Column(type="string", unique=true)
-      * @Groups({"read_user"})
+      * @Groups({"private_read_user"})
       */
      private $apiToken;
 
     /**
      * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="creator")
+     * @Groups({"private_read_user"})
      */
     private $lodgingsCreate;
 
@@ -79,13 +79,13 @@ class User implements UserInterface
 
     /**
      * @ORM\OneToMany(targetEntity=Account::class, mappedBy="creator")
-     * @Groups({"read_user"})
+     * @Groups({"private_read_user"})
      */
     private $accounts;
 
     /**
      * @ORM\OneToOne(targetEntity=Address::class, cascade={"persist", "remove"})
-     * @Groups({"public_read_user"})
+     * @Groups({"public_read"})
      */
     private $address;
 
@@ -96,26 +96,31 @@ class User implements UserInterface
 
     /**
      * @ORM\OneToMany(targetEntity=Invitation::class, mappedBy="userRecipient", orphanRemoval=true)
+     * @Groups({"private_read_user"})
      */
     private $invitationsReceived;
 
     /**
      * @ORM\OneToMany(targetEntity=Message::class, mappedBy="sender")
+     * @Groups({"private_read_user"})
      */
     private $messagesSent;
 
     /**
      * @ORM\OneToMany(targetEntity=Message::class, mappedBy="recipientUser")
+     * @Groups({"private_read_user"})
      */
     private $messagesRecipient;
 
     /**
-     * @ORM\OneToOne(targetEntity=Tenant::class, mappedBy="user", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity=Tenant::class, mappedBy="user", cascade={"persist", "remove"});
+     * @Groups({"private_read_user"})
      */
     private $tenant;
 
     /**
      * @ORM\Column(type="string", length=10)
+     * @Groups({"private_read_user"})
      */
     private $themeUse;
 
@@ -522,6 +527,20 @@ class User implements UserInterface
     {
         if($this->getId() == $user->getId()) {return true;}
         return false;
+    }
+
+    public function userIsIn($invitations):bool
+    {
+        $isIn = false;
+        $i = 0;
+
+        while (!$isIn && $i < sizeof($invitations))
+        {
+            if($this->getId() == $invitations[$i]->getUserRecipient()->getId()) {$isIn = true;}
+            $i++;
+        }
+
+        return $isIn;
     }
 
 }

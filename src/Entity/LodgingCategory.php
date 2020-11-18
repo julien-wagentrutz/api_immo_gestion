@@ -20,13 +20,13 @@ class LodgingCategory
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"public_read_lodging_category"})
+     * @Groups({"public_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"public_read_lodging_category"})
+     * @Groups({"public_read"})
      */
     private $label;
 

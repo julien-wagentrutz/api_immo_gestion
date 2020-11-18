@@ -19,26 +19,26 @@ class Group
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"public_read_group"})
+     * @Groups({"public_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"public_read_group"})
+     * @Groups({"public_read"})
      */
     private $name;
 
     /**
      * @ORM\ManyToOne(targetEntity=GroupType::class, inversedBy="groups")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"public_read_groups-"})
+     * @Groups({"public_read"})
      */
     private $groupType;
 
     /**
      * @ORM\OneToMany(targetEntity=Lodging::class, mappedBy="groupId", orphanRemoval=true)
-     * @Groups({"public_read_group"})
+     * @Groups({"public_read"})
      */
     private $lodgings;
 

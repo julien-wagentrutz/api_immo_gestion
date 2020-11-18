@@ -19,37 +19,34 @@ class Tenant
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"public_read_tenant"})
+     * @Groups({"public_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"public_read_tenant"})
+     * @Groups({"private_read_tenant"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"public_read_tenant"})
+     * @Groups({"private_read_tenant"})
      */
     private $lastName;
 
     /**
      * @ORM\Column(type="date")
-     * @Groups({"read_tenant"})
      */
     private $birthDate;
 
     /**
      * @ORM\Column(type="string", length=12)
-     * @Groups({"read_tenant"})
      */
     private $phoneNumber;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"read_tenant"})
      */
     private $email;
 
@@ -84,13 +81,13 @@ class Tenant
 
     /**
      * @ORM\OneToMany(targetEntity=Rent::class, mappedBy="tenant")
-     * @Groups({"public_read_tenant"})
+     * @Groups({"private_read_tenant"})
      */
     private $rents;
 
     /**
      * @ORM\OneToMany(targetEntity=Intervention::class, mappedBy="tenant")
-     * @Groups({"public_read_tenant"})
+     * @Groups({"private_read_tenant"})
      */
     private $interventions;
 

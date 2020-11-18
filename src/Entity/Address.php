@@ -16,31 +16,31 @@ class Address
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"public_address"})
+     * @Groups({"public_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"public_address"})
+     * @Groups({"public_read"})
      */
     private $city;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"public_address"})
+     * @Groups({"public_read"})
      */
     private $zipCode;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"public_address"})
+     * @Groups({"public_read"})
      */
     private $address;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"public_address"})
+     * @Groups({"public_read"})
      */
     private $addressComplement;
 

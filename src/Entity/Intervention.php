@@ -16,7 +16,7 @@ class Intervention
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"public_read_intervention"})
+     * @Groups({"public_read"})
      */
     private $id;
 

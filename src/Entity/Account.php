@@ -19,13 +19,13 @@ class Account
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"public_read_account"})
+     * @Groups({"public_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=50)
-     * @Groups({"public_read_account"})
+     * @Groups({"public_read"})
      */
     private $type;
 
@@ -38,7 +38,7 @@ class Account
 
     /**
      * @ORM\OneToOne(targetEntity=Address::class, cascade={"persist", "remove"})
-     * @Groups({"public_read_account"})
+     * @Groups({"public_read"})
      */
     private $address;
 

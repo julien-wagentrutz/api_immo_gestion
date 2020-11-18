@@ -20,13 +20,13 @@ class LodgingType
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"public_read_lodging_type"})
+     * @Groups({"public_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"public_read_lodging_type"})
+     * @Groups({"public_read"})
      */
     private $label;
 
@@ -34,7 +34,7 @@ class LodgingType
     /**
      * @ORM\ManyToOne(targetEntity=LodgingCategory::class, inversedBy="lodgingType")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"public_read_lodging_type"})
+     * @Groups({"public_read"})
      */
     private $lodgingCategory;
 

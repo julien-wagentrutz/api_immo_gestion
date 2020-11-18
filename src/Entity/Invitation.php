@@ -16,13 +16,13 @@ class Invitation
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"public_read_invitation"})
+     * @Groups({"public_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="boolean")
-     * @Groups({"public_read_invitation"})
+     * @Groups({"public_read"})
      */
     private $accept;
 
@@ -34,14 +34,14 @@ class Invitation
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="invitationsSent")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"public_read_invitation"})
+     * @Groups({"private_read_invitation"})
      */
     private $userSender;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="invitationsReceived")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"public_read_invitation"})
+     * @Groups({"private_read_invitation"})
      */
     private $userRecipient;
 

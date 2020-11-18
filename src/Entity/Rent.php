@@ -16,19 +16,19 @@ class Rent
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"public_read_rent"})
+     * @Groups({"public_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups({"public_read_rent"})
+     * @Groups({"public_read"})
      */
     private $startRental;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"public_read_rent"})
+     * @Groups({"public_read"})
      */
     private $endRental;
 
@@ -41,7 +41,7 @@ class Rent
     /**
      * @ORM\ManyToOne(targetEntity=Lodging::class, inversedBy="rents")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"public_read_rent"})
+     * @Groups({"public_read"})
      */
     private $lodging;
 

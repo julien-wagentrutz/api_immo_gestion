@@ -18,19 +18,19 @@ class GroupType
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=36, unique=true)
-     * @Groups({"public_read_group_type"})
+     * @Groups({"public_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"public_read_group_type"})
+     * @Groups({"public_read"})
      */
     private $label;
 
     /**
      * @ORM\OneToMany(targetEntity=Group::class, mappedBy="groupType")
-     * @Groups({"private_read_groups_type"})
+     * @Groups({"public_read"})
      */
     private $groups;
 
